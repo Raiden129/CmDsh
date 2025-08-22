@@ -119,10 +119,10 @@ fun AdminScreen(
         // Network Diagnostics Section
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Network Diagnostics", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.weight(1f))
             OutlinedButton(onClick = { showNetworkDiagnostics = true }) {
                 Text("Test Network")
             }

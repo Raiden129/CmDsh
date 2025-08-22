@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import com.securecam.dashboard.data.StreamingSettings
 
 @Composable
 fun NetworkDiagnostics(
@@ -69,6 +71,7 @@ fun NetworkDiagnostics(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Latency:")
+                        Spacer(modifier = Modifier.weight(1f))
                         Text("${testResults.latency}ms")
                     }
                     Row(
@@ -76,6 +79,7 @@ fun NetworkDiagnostics(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Bandwidth:")
+                        Spacer(modifier = Modifier.weight(1f))
                         Text("${testResults.bandwidth} Mbps")
                     }
                     Row(
@@ -83,6 +87,7 @@ fun NetworkDiagnostics(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Packet Loss:")
+                        Spacer(modifier = Modifier.weight(1f))
                         Text("${testResults.packetLoss}%")
                     }
                     Row(
@@ -90,6 +95,7 @@ fun NetworkDiagnostics(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Jitter:")
+                        Spacer(modifier = Modifier.weight(1f))
                         Text("${testResults.jitter}ms")
                     }
                     

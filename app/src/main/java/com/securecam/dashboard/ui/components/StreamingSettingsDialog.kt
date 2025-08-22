@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.securecam.dashboard.data.StreamingSettings
@@ -47,10 +48,10 @@ fun StreamingSettingsDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = localSettings.useTcp,
-                            onCheckedChange = { 
+                            onValueChange = { 
                                 localSettings = localSettings.copy(useTcp = it)
                                 if (it && localSettings.useUdp) {
                                     localSettings = localSettings.copy(useUdp = false)
