@@ -1,0 +1,11 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base app theme -->
+    <style name="Theme.SecureCam" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize Material 3 theme here -->
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:navigationBarColor">@color/colorSurface</item>
+        <item name="android:windowBackground">@color/colorBackground</item>
+    </style>
+
+</resources>

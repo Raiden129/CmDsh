@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">SecureCam Dashboard</string>
+    <string name="home">Home</string>
+    <string name="panel">Panel Mode</string>
+    <string name="admin">Admin</string>
+    <string name="camera_name">Camera Name</string>
+    <string name="rtsp_url">RTSP URL</string>
+    <string name="add_camera">Add Camera</string>
+    <string name="save">Save</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+</resources>
