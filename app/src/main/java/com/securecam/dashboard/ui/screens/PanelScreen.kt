@@ -45,7 +45,8 @@ private fun SingleCameraLayout(camera: Camera) {
     Box(modifier = Modifier.fillMaxSize()) {
         VlcPlayer(
             url = camera.rtspUrl,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            streamingSettings = camera.streamingSettings
         )
     }
 }
@@ -60,7 +61,8 @@ private fun TwoCameraLayout(cameras: List<Camera>) {
             Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 VlcPlayer(
                     url = camera.rtspUrl,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    streamingSettings = camera.streamingSettings
                 )
             }
         }
@@ -77,7 +79,8 @@ private fun ThreeCameraLayout(cameras: List<Camera>) {
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             VlcPlayer(
                 url = cameras[0].rtspUrl,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                streamingSettings = cameras[0].streamingSettings
             )
         }
         // Bottom two cameras share bottom half
@@ -89,7 +92,8 @@ private fun ThreeCameraLayout(cameras: List<Camera>) {
                 Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     VlcPlayer(
                         url = camera.rtspUrl,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        streamingSettings = camera.streamingSettings
                     )
                 }
             }

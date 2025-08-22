@@ -17,6 +17,10 @@ class CamerasViewModel(app: Application) : AndroidViewModel(app) {
     fun updateCamera(id: String, name: String, url: String) {
         viewModelScope.launch { repo.updateCamera(id, name, url) }
     }
+    
+    fun updateCameraStreamingSettings(id: String, streamingSettings: StreamingSettings) {
+        viewModelScope.launch { repo.updateCameraStreamingSettings(id, streamingSettings) }
+    }
 
     fun deleteCamera(id: String) {
         viewModelScope.launch { repo.deleteCamera(id) }

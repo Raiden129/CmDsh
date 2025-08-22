@@ -45,6 +45,15 @@ class CamerasRepository(context: Context) {
         _state.value = newState
         persist(newState)
     }
+    
+    fun updateCameraStreamingSettings(id: String, streamingSettings: StreamingSettings) {
+        val updated = _state.value.cameras.map { c ->
+            if (c.id == id) c.copy(streamingSettings = streamingSettings) else c
+        }
+        val newState = CamerasState(updated)
+        _state.value = newState
+        persist(newState)
+    }
 
     fun deleteCamera(id: String) {
         val updated = _state.value.cameras.filterNot { it.id == id }

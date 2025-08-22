@@ -50,7 +50,11 @@ private fun CameraCard(cam: Camera) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth()) {
             Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
-                VlcPlayer(url = cam.rtspUrl, modifier = Modifier.matchParentSize())
+                VlcPlayer(
+                    url = cam.rtspUrl, 
+                    modifier = Modifier.matchParentSize(),
+                    streamingSettings = cam.streamingSettings
+                )
             }
             Spacer(Modifier.height(6.dp))
             Text(cam.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 12.dp))
