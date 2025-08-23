@@ -2,6 +2,9 @@ package com.securecam.dashboard.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +30,7 @@ fun PanelScreen(cameras: List<Camera>) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(4.dp)
+
     ) {
         when (displayCameras.size) {
             1 -> SingleCameraLayout(displayCameras[0])
@@ -41,28 +44,50 @@ fun PanelScreen(cameras: List<Camera>) {
 }
 
 @Composable
-private fun SingleCameraLayout(camera: Camera) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        VlcPlayer(
-            url = camera.rtspUrl,
-            modifier = Modifier.fillMaxSize()
+private fun CameraPanelTile(camera: Camera, modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
+        Box(Modifier.fillMaxSize().clip(MaterialTheme.shapes.large)) {
+            VlcPlayer(
+                url = camera.rtspUrl,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color(0x80000000))
+                    )
+                )
+        )
+        Text(
+            text = camera.name,
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.White,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(12.dp)
         )
     }
+}
+
+@Composable
+private fun SingleCameraLayout(camera: Camera) {
+    CameraPanelTile(camera = camera, modifier = Modifier.fillMaxSize())
 }
 
 @Composable
 private fun TwoCameraLayout(cameras: List<Camera>) {
     Row(
         modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(0.5.dp)
     ) {
         cameras.forEach { camera ->
-            Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                VlcPlayer(
-                    url = camera.rtspUrl,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            CameraPanelTile(camera = camera, modifier = Modifier.weight(1f).fillMaxHeight())
         }
     }
 }
@@ -71,27 +96,15 @@ private fun TwoCameraLayout(cameras: List<Camera>) {
 private fun ThreeCameraLayout(cameras: List<Camera>) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(0.5.dp)
     ) {
-        // First camera takes top half
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            VlcPlayer(
-                url = cameras[0].rtspUrl,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-        // Bottom two cameras share bottom half
+        CameraPanelTile(camera = cameras[0], modifier = Modifier.weight(1f).fillMaxWidth())
         Row(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.5.dp)
         ) {
             cameras.drop(1).forEach { camera ->
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    VlcPlayer(
-                        url = camera.rtspUrl,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                CameraPanelTile(camera = camera, modifier = Modifier.weight(1f).fillMaxHeight())
             }
         }
     }
@@ -101,34 +114,24 @@ private fun ThreeCameraLayout(cameras: List<Camera>) {
 private fun FourCameraLayout(cameras: List<Camera>) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(0.5.dp)
     ) {
         // Top row - 2 cameras
         Row(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.5.dp)
         ) {
             cameras.take(2).forEach { camera ->
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    VlcPlayer(
-                        url = camera.rtspUrl,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                CameraPanelTile(camera = camera, modifier = Modifier.weight(1f).fillMaxHeight())
             }
         }
         // Bottom row - 2 cameras
         Row(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.5.dp)
         ) {
             cameras.drop(2).take(2).forEach { camera ->
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    VlcPlayer(
-                        url = camera.rtspUrl,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                CameraPanelTile(camera = camera, modifier = Modifier.weight(1f).fillMaxHeight())
             }
         }
     }
@@ -138,34 +141,24 @@ private fun FourCameraLayout(cameras: List<Camera>) {
 private fun FiveCameraLayout(cameras: List<Camera>) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(0.5.dp)
     ) {
         // Top row - 2 cameras
         Row(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.5.dp)
         ) {
             cameras.take(2).forEach { camera ->
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    VlcPlayer(
-                        url = camera.rtspUrl,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                CameraPanelTile(camera = camera, modifier = Modifier.weight(1f).fillMaxHeight())
             }
         }
         // Bottom row - 3 cameras
         Row(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.5.dp)
         ) {
             cameras.drop(2).take(3).forEach { camera ->
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    VlcPlayer(
-                        url = camera.rtspUrl,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                CameraPanelTile(camera = camera, modifier = Modifier.weight(1f).fillMaxHeight())
             }
         }
     }
@@ -175,34 +168,24 @@ private fun FiveCameraLayout(cameras: List<Camera>) {
 private fun SixCameraLayout(cameras: List<Camera>) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(0.5.dp)
     ) {
         // Top row - 3 cameras
         Row(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.5.dp)
         ) {
             cameras.take(3).forEach { camera ->
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    VlcPlayer(
-                        url = camera.rtspUrl,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                CameraPanelTile(camera = camera, modifier = Modifier.weight(1f).fillMaxHeight())
             }
         }
         // Bottom row - 3 cameras
         Row(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.5.dp)
         ) {
             cameras.drop(3).take(3).forEach { camera ->
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    VlcPlayer(
-                        url = camera.rtspUrl,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                CameraPanelTile(camera = camera, modifier = Modifier.weight(1f).fillMaxHeight())
             }
         }
     }
