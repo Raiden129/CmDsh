@@ -15,7 +15,13 @@ fun StreamingSettingsDialog(
     onSettingsChanged: (StreamingSettings) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var localSettings by remember { mutableStateOf(settings) }
+    // Ensure we always start with valid settings
+    var localSettings by remember { mutableStateOf(settings.validate()) }
+    
+    // Update local settings when input settings change
+    LaunchedEffect(settings) {
+        localSettings = settings.validate()
+    }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -51,9 +57,16 @@ fun StreamingSettingsDialog(
                         Checkbox(
                             checked = localSettings.useTcp,
                             onCheckedChange = { 
-                                localSettings = localSettings.copy(useTcp = it)
-                                if (it && localSettings.useUdp) {
-                                    localSettings = localSettings.copy(useUdp = false)
+                                if (it) {
+                                    localSettings = localSettings.copy(
+                                        useTcp = true,
+                                        useUdp = false
+                                    )
+                                } else if (!localSettings.useUdp) {
+                                    // Ensure at least one protocol is selected
+                                    localSettings = localSettings.copy(useTcp = true)
+                                } else {
+                                    localSettings = localSettings.copy(useTcp = false)
                                 }
                             }
                         )
@@ -63,14 +76,30 @@ fun StreamingSettingsDialog(
                         Checkbox(
                             checked = localSettings.useUdp,
                             onCheckedChange = { 
-                                localSettings = localSettings.copy(useUdp = it)
-                                if (it && localSettings.useTcp) {
-                                    localSettings = localSettings.copy(useTcp = false)
+                                if (it) {
+                                    localSettings = localSettings.copy(
+                                        useUdp = true,
+                                        useTcp = false
+                                    )
+                                } else if (!localSettings.useTcp) {
+                                    // Ensure at least one protocol is selected
+                                    localSettings = localSettings.copy(useUdp = true)
+                                } else {
+                                    localSettings = localSettings.copy(useUdp = false)
                                 }
                             }
                         )
                         Text("UDP (Lower latency)")
                     }
+                }
+                
+                // Protocol validation warning
+                if (!localSettings.useTcp && !localSettings.useUdp) {
+                    Text(
+                        text = "⚠️ At least one protocol must be selected",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
                 
                 // Buffer Settings
@@ -286,9 +315,13 @@ fun StreamingSettingsDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    onSettingsChanged(localSettings)
-                    onDismiss()
-                }
+                    // Validate settings before saving
+                    if (localSettings.isValid()) {
+                        onSettingsChanged(localSettings)
+                        onDismiss()
+                    }
+                },
+                enabled = localSettings.isValid()
             ) {
                 Text("Save")
             }

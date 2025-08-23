@@ -116,7 +116,8 @@ private fun App(vm: CamerasViewModel = viewModel()) {
                     onAdd = { name, url -> vm.addCamera(name, url) },
                     onUpdate = { id, name, url -> vm.updateCamera(id, name, url) },
                     onDelete = { id -> vm.deleteCamera(id) },
-                    onUpdateStreamingSettings = { id, settings -> vm.updateCameraStreamingSettings(id, settings) }
+                    onUpdateStreamingSettings = { id, settings -> vm.updateCameraStreamingSettings(id, settings) },
+                    onResetAllStreamingSettings = { vm.resetAllStreamingSettings() }
                 )
             }
         }
