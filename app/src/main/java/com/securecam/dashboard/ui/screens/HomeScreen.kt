@@ -1,6 +1,11 @@
 package com.securecam.dashboard.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.material3.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -34,27 +39,58 @@ fun HomeScreen(
     // Adaptive grid that works on phones and larger screens
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 280.dp),
-        contentPadding = PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         items(cameras, key = { it.id }) { cam ->
-            CameraCard(cam)
+            CameraTile(cam)
         }
     }
 }
 
 @Composable
-private fun CameraCard(cam: Camera) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.fillMaxWidth()) {
-            Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
-                VlcPlayer(url = cam.rtspUrl, modifier = Modifier.matchParentSize())
+private fun CameraTile(cam: Camera) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
+            VlcPlayer(url = cam.rtspUrl, modifier = Modifier.matchParentSize())
+
+            // Gradient overlay at bottom for title legibility
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color(0x80000000))
+                        )
+                    )
+            )
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // status dot (placeholder green)
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(MaterialTheme.shapes.extraSmall)
+                        .background(Color(0xFF4CAF50))
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(cam.name, style = MaterialTheme.typography.titleMedium, color = Color.White)
             }
-            Spacer(Modifier.height(6.dp))
-            Text(cam.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 12.dp))
-            Spacer(Modifier.height(6.dp))
         }
     }
 }
