@@ -5,8 +5,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.securecam.dashboard.data.Camera
 import com.securecam.dashboard.data.StreamingSettings
@@ -79,7 +79,7 @@ fun AdminScreen(
     if (showNetworkDiagnostics) {
         NetworkDiagnostics(
             onDismiss = { showNetworkDiagnostics = false },
-            onApplyRecommendedSettings = { settings ->
+            onApplyRecommendedSettings = { _ ->
                 // Apply to all cameras or show a selection dialog
                 // For now, just close the dialog
                 showNetworkDiagnostics = false
@@ -114,7 +114,7 @@ fun AdminScreen(
             enabled = name.isNotBlank() && url.isNotBlank()
         ) { Text("Add Camera") }
 
-        Divider(Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
         
         // Network Diagnostics Section
         Row(
@@ -133,7 +133,7 @@ fun AdminScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         
-        Divider(Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
         Text("Saved Cameras", style = MaterialTheme.typography.titleLarge)
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
