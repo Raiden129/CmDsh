@@ -20,6 +20,7 @@ fun AdminScreen(
     onUpdate: (String, String, String) -> Unit,
     onDelete: (String) -> Unit,
     onUpdateStreamingSettings: (String, StreamingSettings) -> Unit,
+    onResetAllStreamingSettings: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
@@ -216,6 +217,38 @@ private fun CameraRow(
                     colors = ButtonDefaults.outlinedButtonColors()
                 ) {
                     Text("Delete")
+                }
+            }
+            
+            // Emergency recovery section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        "Emergency Recovery",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Text(
+                        "If the app crashes due to streaming settings, use this to reset all cameras to default settings.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    OutlinedButton(
+                        onClick = onResetAllStreamingSettings,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Reset All Streaming Settings")
+                    }
                 }
             }
         }

@@ -25,4 +25,12 @@ class CamerasViewModel(app: Application) : AndroidViewModel(app) {
     fun deleteCamera(id: String) {
         viewModelScope.launch { repo.deleteCamera(id) }
     }
+    
+    /**
+     * Emergency recovery function to reset all streaming settings
+     * Call this if the app crashes due to corrupted streaming settings
+     */
+    fun resetAllStreamingSettings() {
+        viewModelScope.launch { repo.resetAllStreamingSettings() }
+    }
 }

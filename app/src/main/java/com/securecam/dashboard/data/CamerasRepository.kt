@@ -19,8 +19,17 @@ class CamerasRepository(context: Context) {
     private fun load(): CamerasState {
         val data = prefs.getString(KEY_CAMERAS, null)
         return try {
-            if (data.isNullOrBlank()) CamerasState() else json.decodeFromString(data)
-        } catch (_: Exception) {
+            if (data.isNullOrBlank()) CamerasState() else {
+                val loadedState = json.decodeFromString<CamerasState>(data)
+                // Validate all streaming settings to prevent crashes from corrupted data
+                val validatedCameras = loadedState.cameras.map { camera ->
+                    camera.copy(streamingSettings = camera.streamingSettings.validate())
+                }
+                CamerasState(validatedCameras)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("CamerasRepository", "Error loading camera data: ${e.message}")
+            // Return default state if loading fails
             CamerasState()
         }
     }
@@ -47,12 +56,36 @@ class CamerasRepository(context: Context) {
     }
     
     fun updateCameraStreamingSettings(id: String, streamingSettings: StreamingSettings) {
-        val updated = _state.value.cameras.map { c ->
-            if (c.id == id) c.copy(streamingSettings = streamingSettings) else c
+        try {
+            android.util.Log.d("CamerasRepository", "Updating streaming settings for camera $id")
+            
+            // Use the built-in validation to ensure safe settings
+            val validatedSettings = streamingSettings.validate()
+            
+            android.util.Log.d("CamerasRepository", "Validated settings: TCP=${validatedSettings.useTcp}, UDP=${validatedSettings.useUdp}")
+            
+            val updated = _state.value.cameras.map { c ->
+                if (c.id == id) c.copy(streamingSettings = validatedSettings) else c
+            }
+            val newState = CamerasState(updated)
+            _state.value = newState
+            persist(newState)
+            
+            android.util.Log.d("CamerasRepository", "Successfully updated streaming settings for camera $id")
+        } catch (e: Exception) {
+            // Log error and fallback to safe default
+            android.util.Log.e("CamerasRepository", "Error updating streaming settings: ${e.message}")
+            // Fallback to default settings
+            val fallbackSettings = StreamingSettings()
+            val updated = _state.value.cameras.map { c ->
+                if (c.id == id) c.copy(streamingSettings = fallbackSettings) else c
+            }
+            val newState = CamerasState(updated)
+            _state.value = newState
+            persist(newState)
+            
+            android.util.Log.d("CamerasRepository", "Applied fallback settings for camera $id")
         }
-        val newState = CamerasState(updated)
-        _state.value = newState
-        persist(newState)
     }
 
     fun deleteCamera(id: String) {
@@ -60,6 +93,33 @@ class CamerasRepository(context: Context) {
         val newState = CamerasState(updated)
         _state.value = newState
         persist(newState)
+    }
+    
+    /**
+     * Emergency recovery function to reset all streaming settings to defaults
+     * Use this if the app crashes due to corrupted streaming settings
+     */
+    fun resetAllStreamingSettings() {
+        try {
+            android.util.Log.w("CamerasRepository", "Resetting all streaming settings to defaults")
+            val resetCameras = _state.value.cameras.map { camera ->
+                camera.copy(streamingSettings = StreamingSettings())
+            }
+            val newState = CamerasState(resetCameras)
+            _state.value = newState
+            persist(newState)
+            android.util.Log.d("CamerasRepository", "Successfully reset all streaming settings")
+        } catch (e: Exception) {
+            android.util.Log.e("CamerasRepository", "Error resetting streaming settings: ${e.message}")
+            // If even the reset fails, try to clear all data
+            try {
+                _state.value = CamerasState()
+                persist(CamerasState())
+                android.util.Log.d("CamerasRepository", "Cleared all camera data as fallback")
+            } catch (clearError: Exception) {
+                android.util.Log.e("CamerasRepository", "Failed to clear data: ${clearError.message}")
+            }
+        }
     }
 
     companion object {
