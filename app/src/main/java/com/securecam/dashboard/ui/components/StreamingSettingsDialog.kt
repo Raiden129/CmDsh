@@ -235,45 +235,19 @@ fun StreamingSettingsDialog(
                 ) {
                     OutlinedButton(
                         onClick = {
-                            localSettings = StreamingSettings(
-                                networkCachingMs = 100,
-                                useTcp = true,
-                                useUdp = false,
-                                bufferSize = 512,
-                                maxLatency = 0,
-                                clockJitter = 0,
-                                clockSynchro = 0,
-                                rtspTimeout = 3000,
-                                httpTimeout = 3000,
-                                networkRetries = 5,
-                                useHardwareAcceleration = true,
-                                enableAdaptiveBuffering = false
-                            )
+                            localSettings = StreamingSettings.lowLatency()
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Low Latency")
+                        Text("Ultra Low Latency")
                     }
                     OutlinedButton(
                         onClick = {
-                            localSettings = StreamingSettings(
-                                networkCachingMs = 500,
-                                useTcp = true,
-                                useUdp = false,
-                                bufferSize = 2048,
-                                maxLatency = 100,
-                                clockJitter = 0,
-                                clockSynchro = 0,
-                                rtspTimeout = 10000,
-                                httpTimeout = 10000,
-                                networkRetries = 3,
-                                useHardwareAcceleration = true,
-                                enableAdaptiveBuffering = true
-                            )
+                            localSettings = StreamingSettings.balanced()
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("High Stability")
+                        Text("Balanced")
                     }
                 }
                 Row(
@@ -282,25 +256,25 @@ fun StreamingSettingsDialog(
                 ) {
                     OutlinedButton(
                         onClick = {
-                            localSettings = StreamingSettings(
-                                networkCachingMs = 200,
-                                useTcp = false,
-                                useUdp = true,
-                                bufferSize = 1024,
-                                maxLatency = 0,
-                                clockJitter = 0,
-                                clockSynchro = 0,
-                                rtspTimeout = 5000,
-                                httpTimeout = 5000,
-                                networkRetries = 3,
-                                useHardwareAcceleration = true,
-                                enableAdaptiveBuffering = false
-                            )
+                            localSettings = StreamingSettings.highStability()
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("UDP Fast")
+                        Text("High Stability")
                     }
+                    OutlinedButton(
+                        onClick = {
+                            localSettings = StreamingSettings.udpOptimized()
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("UDP Optimized")
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     OutlinedButton(
                         onClick = {
                             localSettings = StreamingSettings()
@@ -308,6 +282,242 @@ fun StreamingSettingsDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Reset to Default")
+                    }
+                }
+                
+                // Advanced LibVLC Options
+                Text("Advanced LibVLC Options", style = MaterialTheme.typography.titleSmall)
+                
+                // Adaptive Buffer Settings
+                OutlinedTextField(
+                    value = localSettings.adaptiveMaxBuffer.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            adaptiveMaxBuffer = it.toIntOrNull() ?: 2000
+                        )
+                    },
+                    label = { Text("Adaptive Max Buffer (ms)") },
+                    supportingText = { Text("Maximum adaptive buffer size") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.adaptiveMinBuffer.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            adaptiveMinBuffer = it.toIntOrNull() ?: 500
+                        )
+                    },
+                    label = { Text("Adaptive Min Buffer (ms)") },
+                    supportingText = { Text("Minimum adaptive buffer size") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.adaptiveLiveBuffer.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            adaptiveLiveBuffer = it.toIntOrNull() ?: 1000
+                        )
+                    },
+                    label = { Text("Adaptive Live Buffer (ms)") },
+                    supportingText = { Text("Live stream adaptive buffer size") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Performance Options
+                Text("Performance Options", style = MaterialTheme.typography.titleSmall)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = localSettings.skipLoopFilter,
+                            onCheckedChange = { 
+                                localSettings = localSettings.copy(skipLoopFilter = it)
+                            }
+                        )
+                        Text("Skip Loop Filter")
+                    }
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = localSettings.skipFrame,
+                            onCheckedChange = { 
+                                localSettings = localSettings.copy(skipFrame = it)
+                            }
+                        )
+                        Text("Skip Frames")
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = localSettings.skipIdct,
+                            onCheckedChange = { 
+                                localSettings = localSettings.copy(skipIdct = it)
+                            }
+                        )
+                        Text("Skip IDCT")
+                    }
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = localSettings.lowLatencyMode,
+                            onCheckedChange = { 
+                                localSettings = localSettings.copy(lowLatencyMode = it)
+                            }
+                        )
+                        Text("Ultra Low Latency")
+                    }
+                }
+                
+                // Advanced Network Options
+                Text("Advanced Network Options", style = MaterialTheme.typography.titleSmall)
+                
+                OutlinedTextField(
+                    value = localSettings.avcodecThreads.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            avcodecThreads = it.toIntOrNull() ?: 0
+                        )
+                    },
+                    label = { Text("AVCodec Threads") },
+                    supportingText = { Text("0 = auto-detect, 1-32 = manual") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.jitterBufferSize.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            jitterBufferSize = it.toIntOrNull() ?: 500
+                        )
+                    },
+                    label = { Text("Jitter Buffer Size (ms)") },
+                    supportingText = { Text("UDP jitter buffer size") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.multicastTtl.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            multicastTtl = it.toIntOrNull() ?: 1
+                        )
+                    },
+                    label = { Text("Multicast TTL") },
+                    supportingText = { Text("UDP multicast TTL value") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.bandwidthLimit.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            bandwidthLimit = it.toIntOrNull() ?: 0
+                        )
+                    },
+                    label = { Text("Bandwidth Limit (kbps)") },
+                    supportingText = { Text("0 = unlimited") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.frameDropThreshold.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            frameDropThreshold = it.toIntOrNull() ?: 10
+                        )
+                    },
+                    label = { Text("Frame Drop Threshold") },
+                    supportingText = { Text("Frame drop threshold for low latency") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.bufferWatermark.toString(),
+                    onValueChange = { 
+                        localSettings = localSettings.copy(
+                            bufferWatermark = it.toIntOrNull() ?: 80
+                        )
+                    },
+                    label = { Text("Buffer Watermark (%)") },
+                    supportingText = { Text("Buffer watermark percentage") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Video Processing Options
+                Text("Video Processing Options", style = MaterialTheme.typography.titleSmall)
+                
+                OutlinedTextField(
+                    value = localSettings.deinterlaceMode,
+                    onValueChange = { 
+                        localSettings = localSettings.copy(deinterlaceMode = it)
+                    },
+                    label = { Text("Deinterlace Mode") },
+                    supportingText = { Text("blend, bob, linear, x, yadif, yadif2x") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.videoFilter,
+                    onValueChange = { 
+                        localSettings = localSettings.copy(videoFilter = it)
+                    },
+                    label = { Text("Video Filter") },
+                    supportingText = { Text("Custom VLC video filters") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.networkInterface,
+                    onValueChange = { 
+                        localSettings = localSettings.copy(networkInterface = it)
+                    },
+                    label = { Text("Network Interface") },
+                    supportingText = { Text("Specific network interface name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = localSettings.rtspUserAgent,
+                    onValueChange = { 
+                        localSettings = localSettings.copy(rtspUserAgent = it)
+                    },
+                    label = { Text("RTSP User Agent") },
+                    supportingText = { Text("Custom RTSP user agent string") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Statistics and Monitoring
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = localSettings.enableStats,
+                            onCheckedChange = { 
+                                localSettings = localSettings.copy(enableStats = it)
+                            }
+                        )
+                        Text("Enable Statistics")
                     }
                 }
             }
