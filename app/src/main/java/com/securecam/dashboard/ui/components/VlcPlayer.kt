@@ -26,33 +26,141 @@ fun VlcPlayer(
     val context = androidx.compose.ui.platform.LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
+    // Create LibVLC instance with optimized options
     val libVlc = remember {
         val options = mutableListOf<String>()
         
-        // Basic options
-        options.add("--audio-time-stretch")
+        // Core LibVLC options for better performance
+        options.add("--no-audio") // Disable audio for camera streams
+        options.add("--no-video-title-show") // Hide video title
+        options.add("--no-stats") // Disable statistics display
         
-        // Protocol options - ensure only one is selected to avoid conflicts
-        when {
-            streamingSettings.useTcp -> options.add("--rtsp-tcp")
-            streamingSettings.useUdp -> options.add("--rtsp-udp")
-            else -> options.add("--rtsp-tcp") // Default to TCP if neither is explicitly set
-        }
-        
-        // Network performance options
-        if (streamingSettings.enableAdaptiveBuffering) {
-            options.add("--adaptive-maxbuffer")
-        }
+        // Network performance optimizations
+        options.add("--network-caching=${streamingSettings.networkCachingMs}")
+        options.add("--live-caching=${streamingSettings.networkCachingMs}")
         
         // Hardware acceleration
         if (streamingSettings.useHardwareAcceleration) {
-            options.add("--avcodec-hw")
+            options.add("--avcodec-hw=any") // Enable hardware acceleration for any available codec
+            options.add("--avcodec-threads=${streamingSettings.avcodecThreads}") // Thread count
+        }
+        
+        // Protocol selection - CRITICAL FIX: Only one protocol at a time
+        when {
+            streamingSettings.useUdp -> {
+                options.add("--rtsp-udp")
+                options.add("--rtsp-tcp=0") // Explicitly disable TCP
+            }
+            else -> {
+                options.add("--rtsp-tcp")
+                options.add("--rtsp-udp=0") // Explicitly disable UDP
+            }
+        }
+        
+        // Advanced network optimizations
+        options.add("--adaptive-maxbuffer=${streamingSettings.adaptiveMaxBuffer}")
+        options.add("--adaptive-minbuffer=${streamingSettings.adaptiveMinBuffer}")
+        options.add("--adaptive-live-buffer=${streamingSettings.adaptiveLiveBuffer}")
+        
+        // Clock synchronization for live streams
+        options.add("--clock-jitter=${streamingSettings.clockJitter}")
+        options.add("--clock-synchro=${streamingSettings.clockSynchro}")
+        
+        // Network timeout and retry settings
+        options.add("--rtsp-timeout=${streamingSettings.rtspTimeout}")
+        options.add("--http-timeout=${streamingSettings.httpTimeout}")
+        options.add("--network-retries=${streamingSettings.networkRetries}")
+        
+        // Buffer management
+        options.add("--sout-mux-caching=${streamingSettings.bufferSize}")
+        options.add("--live-caching=${streamingSettings.maxLatency.takeIf { it > 0 } ?: streamingSettings.networkCachingMs}")
+        
+        // Performance optimizations
+        if (streamingSettings.skipLoopFilter) {
+            options.add("--avcodec-skiploopfilter=1") // Skip loop filter for better performance
+        }
+        if (streamingSettings.skipFrame) {
+            options.add("--avcodec-skip-frame=1") // Skip frames if needed
+        }
+        if (streamingSettings.skipIdct) {
+            options.add("--avcodec-skip-idct=1") // Skip IDCT if needed
+        }
+        
+        // Memory management
+        options.add("--avcodec-max-threads=${streamingSettings.avcodecThreads}")
+        
+        // Network interface optimizations
+        if (streamingSettings.networkInterface.isNotBlank()) {
+            options.add("--network-interface=${streamingSettings.networkInterface}")
+        }
+        
+        // RTSP specific optimizations
+        if (streamingSettings.useUdp) {
+            // UDP specific optimizations
+            options.add("--network-caching=${(streamingSettings.networkCachingMs * 0.5).toInt().coerceAtLeast(50)}")
+            options.add("--live-caching=${(streamingSettings.networkCachingMs * 0.5).toInt().coerceAtLeast(50)}")
+            options.add("--multicast-ttl=${streamingSettings.multicastTtl}")
+            options.add("--jitter-buffer-size=${streamingSettings.jitterBufferSize}")
+        } else {
+            // TCP specific optimizations
+            options.add("--network-caching=${streamingSettings.networkCachingMs}")
+            options.add("--live-caching=${streamingSettings.networkCachingMs}")
+        }
+        
+        // Adaptive buffering
+        if (streamingSettings.enableAdaptiveBuffering) {
+            options.add("--adaptive-maxbuffer=${streamingSettings.adaptiveMaxBuffer}")
+            options.add("--adaptive-minbuffer=${streamingSettings.adaptiveMinBuffer}")
+            options.add("--adaptive-live-buffer=${streamingSettings.adaptiveLiveBuffer}")
+        }
+        
+        // Jitter buffer for UDP streams
+        if (streamingSettings.useUdp) {
+            options.add("--clock-jitter=${streamingSettings.clockJitter}")
+            options.add("--clock-synchro=0") // Disable clock sync for UDP
+        } else {
+            options.add("--clock-jitter=${streamingSettings.clockJitter}")
+            options.add("--clock-synchro=${streamingSettings.clockSynchro}")
+        }
+        
+        // Low latency mode optimizations
+        if (streamingSettings.lowLatencyMode) {
+            options.add("--live-caching=0") // Minimal caching for ultra-low latency
+            options.add("--network-caching=0") // Minimal network caching
+            options.add("--clock-synchro=0") // Disable clock synchronization
+            options.add("--avcodec-skiploopfilter=1") // Skip loop filter
+        }
+        
+        // Bandwidth limiting
+        if (streamingSettings.bandwidthLimit > 0) {
+            options.add("--sout-mux-caching=${streamingSettings.bufferSize}")
+            options.add("--live-caching=${streamingSettings.maxLatency.takeIf { it > 0 } ?: streamingSettings.networkCachingMs}")
+        }
+        
+        // Custom user agent
+        if (streamingSettings.rtspUserAgent.isNotBlank()) {
+            options.add("--rtsp-user-agent=${streamingSettings.rtspUserAgent}")
+        }
+        
+        // Video filters
+        if (streamingSettings.videoFilter.isNotBlank()) {
+            options.add("--video-filter=${streamingSettings.videoFilter}")
+        }
+        
+        // Deinterlacing
+        if (streamingSettings.deinterlaceMode.isNotBlank()) {
+            options.add("--deinterlace=${streamingSettings.deinterlaceMode}")
+        }
+        
+        // Statistics (if enabled)
+        if (streamingSettings.enableStats) {
+            options.add("--stats") // Enable statistics
         }
 
         LibVLC(context, options)
     }
+    
     val mediaPlayer = remember { MediaPlayer(libVlc) }
-
     val videoLayout = remember { VLCVideoLayout(context) }
 
     AndroidView(
@@ -66,130 +174,51 @@ fun VlcPlayer(
         modifier = modifier
     )
 
-    LaunchedEffect(url) {
+    LaunchedEffect(url, streamingSettings) {
         try {
             val media = Media(libVlc, Uri.parse(url))
             
-            // Use the built-in validation to ensure safe settings
-            val validatedSettings = streamingSettings.validate()
-            
-            // Apply streaming settings with validation
+            // Apply additional media-specific options that can't be set at LibVLC level
             try {
-                media.addOption(":network-caching=${validatedSettings.networkCachingMs}")
-                media.addOption(":clock-jitter=${validatedSettings.clockJitter}")
-                media.addOption(":clock-synchro=${validatedSettings.clockSynchro}")
-                media.addOption(":rtsp-timeout=${validatedSettings.rtspTimeout}")
-                media.addOption(":http-timeout=${validatedSettings.httpTimeout}")
-                media.addOption(":network-retries=${validatedSettings.networkRetries}")
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying some streaming options: ${e.message}")
-            }
-            
-            // Buffer settings with validation
-            try {
-                if (validatedSettings.bufferSize > 0) {
-                    media.addOption(":sout-mux-caching=${validatedSettings.bufferSize}")
+                // Network caching (can be overridden per media)
+                media.addOption(":network-caching=${streamingSettings.networkCachingMs}")
+                media.addOption(":live-caching=${streamingSettings.maxLatency.takeIf { it > 0 } ?: streamingSettings.networkCachingMs}")
+                
+                // Buffer settings
+                if (streamingSettings.bufferSize > 0) {
+                    media.addOption(":sout-mux-caching=${streamingSettings.bufferSize}")
                 }
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying buffer settings: ${e.message}")
-            }
-            
-            // Latency settings with validation
-            try {
-                if (validatedSettings.maxLatency > 0) {
+                
+                // Latency control
+                if (streamingSettings.maxLatency > 0) {
+                    media.addOption(":live-caching=${streamingSettings.maxLatency}")
                     media.addOption(":clock-synchro=0")
-                    media.addOption(":live-caching=${validatedSettings.maxLatency}")
                 }
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying latency settings: ${e.message}")
-            }
-            
-            // Custom options with validation
-            try {
-                validatedSettings.customOptions.forEach { (key, value) ->
+                
+                // Custom options from user
+                streamingSettings.customOptions.forEach { (key, value) ->
                     if (key.isNotBlank() && value.isNotBlank()) {
                         media.addOption(":$key=$value")
                     }
                 }
+                
             } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying custom options: ${e.message}")
-            }
-            
-            // Additional network performance optimizations
-            try {
-                if (validatedSettings.enableAdaptiveBuffering) {
-                    media.addOption(":adaptive-maxbuffer=2000")
-                    media.addOption(":adaptive-minbuffer=500")
-                }
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying adaptive buffering: ${e.message}")
-            }
-            
-            // Network interface selection for better performance
-            try {
-                media.addOption(":network-caching=${validatedSettings.networkCachingMs}")
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying network caching: ${e.message}")
-            }
-            
-            // RTSP specific optimizations - only add if not already set in LibVLC options
-            // Note: Protocol is already set in LibVLC initialization above
-            
-            // Reduce jitter for live streams
-            try {
-                if (validatedSettings.maxLatency > 0) {
-                    media.addOption(":live-caching=${validatedSettings.maxLatency}")
-                    media.addOption(":clock-synchro=0")
-                }
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying jitter settings: ${e.message}")
-            }
-            
-            // Advanced network optimizations
-            try {
-                if (validatedSettings.networkRetries > 0) {
-                    media.addOption(":network-retries=${validatedSettings.networkRetries}")
-                }
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying network retry settings: ${e.message}")
-            }
-            
-            // Buffer management for better performance
-            try {
-                if (validatedSettings.bufferSize > 0) {
-                    media.addOption(":sout-mux-caching=${validatedSettings.bufferSize}")
-                    media.addOption(":live-caching=${validatedSettings.bufferSize}")
-                }
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying buffer management: ${e.message}")
-            }
-            
-            // Protocol-specific timeouts
-            try {
-                media.addOption(":rtsp-timeout=${validatedSettings.rtspTimeout}")
-                media.addOption(":http-timeout=${validatedSettings.httpTimeout}")
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying timeout settings: ${e.message}")
-            }
-            
-            // Clock synchronization for live streams
-            try {
-                media.addOption(":clock-jitter=${validatedSettings.clockJitter}")
-                media.addOption(":clock-synchro=${validatedSettings.clockSynchro}")
-            } catch (e: Exception) {
-                android.util.Log.w("VlcPlayer", "Error applying clock settings: ${e.message}")
+                android.util.Log.w("VlcPlayer", "Error applying media options: ${e.message}")
             }
             
             mediaPlayer.media = media
             media.release()
             mediaPlayer.play()
+            
         } catch (e: Exception) {
             android.util.Log.e("VlcPlayer", "Error setting up media: ${e.message}")
-            // Try to play with minimal settings if there's an error
+            
+            // Emergency fallback with minimal settings
             try {
                 val fallbackMedia = Media(libVlc, Uri.parse(url))
                 fallbackMedia.addOption(":rtsp-tcp")
                 fallbackMedia.addOption(":network-caching=500")
+                fallbackMedia.addOption(":live-caching=500")
                 mediaPlayer.media = fallbackMedia
                 fallbackMedia.release()
                 mediaPlayer.play()
