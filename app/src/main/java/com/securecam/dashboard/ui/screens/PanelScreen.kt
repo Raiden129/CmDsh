@@ -8,14 +8,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.securecam.dashboard.data.Camera
-import com.securecam.dashboard.ui.components.VlcPlayer
+import com.securecam.dashboard.ui.components.AdaptiveVlcPlayer
+import com.securecam.dashboard.ui.components.isAndroidTv
 
 @Composable
 fun PanelScreen(cameras: List<Camera>) {
+    val context = LocalContext.current
+    val isAndroidTv = remember { context.isAndroidTv() }
+    
     if (cameras.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("No cameras configured", style = MaterialTheme.typography.titleMedium)
@@ -23,8 +29,9 @@ fun PanelScreen(cameras: List<Camera>) {
         return
     }
 
-    // Take only up to 6 cameras
-    val displayCameras = cameras.take(6)
+    // Limit cameras for Android TV to reduce GPU load on Mali G31 MP2
+    val maxCameras = if (isAndroidTv) 4 else 6  // Reduced from 6 to 4 for Android TV
+    val displayCameras = cameras.take(maxCameras)
 
     Box(
         modifier = Modifier
@@ -37,19 +44,24 @@ fun PanelScreen(cameras: List<Camera>) {
             2 -> TwoCameraLayout(displayCameras)
             3 -> ThreeCameraLayout(displayCameras)
             4 -> FourCameraLayout(displayCameras)
-            5 -> FiveCameraLayout(displayCameras)
-            6 -> SixCameraLayout(displayCameras)
+            5 -> if (!isAndroidTv) FiveCameraLayout(displayCameras) else FourCameraLayout(displayCameras.take(4))
+            6 -> if (!isAndroidTv) SixCameraLayout(displayCameras) else FourCameraLayout(displayCameras.take(4))
         }
     }
 }
 
 @Composable
 private fun CameraPanelTile(camera: Camera, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val isAndroidTv = remember { context.isAndroidTv() }
+    
     Box(modifier = modifier) {
         Box(Modifier.fillMaxSize().clip(MaterialTheme.shapes.large)) {
-            VlcPlayer(
+            AdaptiveVlcPlayer(
                 url = camera.rtspUrl,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                // Adaptive caching based on device type and concurrent streams
+                networkCachingMs = if (isAndroidTv) 1000 else 500
             )
         }
 

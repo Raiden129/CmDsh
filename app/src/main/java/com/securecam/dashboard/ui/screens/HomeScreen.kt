@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.securecam.dashboard.data.Camera
-import com.securecam.dashboard.ui.components.VlcPlayer
+import com.securecam.dashboard.ui.components.AdaptiveVlcPlayer
 
 @Composable
 fun HomeScreen(
@@ -59,7 +59,7 @@ private fun CameraTile(cam: Camera) {
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
-            VlcPlayer(url = cam.rtspUrl, modifier = Modifier.matchParentSize())
+            AdaptiveVlcPlayer(url = cam.rtspUrl, modifier = Modifier.matchParentSize())
 
             // Gradient overlay at bottom for title legibility
             Box(
