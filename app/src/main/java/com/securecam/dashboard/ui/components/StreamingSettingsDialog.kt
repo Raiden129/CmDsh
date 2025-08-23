@@ -47,60 +47,7 @@ fun StreamingSettingsDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
                 
-                // Protocol Selection
-                Text("Protocol Settings", style = MaterialTheme.typography.titleSmall)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = localSettings.useTcp,
-                            onCheckedChange = { 
-                                if (it) {
-                                    localSettings = localSettings.copy(
-                                        useTcp = true,
-                                        useUdp = false
-                                    )
-                                } else if (!localSettings.useUdp) {
-                                    // Ensure at least one protocol is selected
-                                    localSettings = localSettings.copy(useTcp = true)
-                                } else {
-                                    localSettings = localSettings.copy(useTcp = false)
-                                }
-                            }
-                        )
-                        Text("TCP (More stable)")
-                    }
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = localSettings.useUdp,
-                            onCheckedChange = { 
-                                if (it) {
-                                    localSettings = localSettings.copy(
-                                        useUdp = true,
-                                        useTcp = false
-                                    )
-                                } else if (!localSettings.useTcp) {
-                                    // Ensure at least one protocol is selected
-                                    localSettings = localSettings.copy(useUdp = true)
-                                } else {
-                                    localSettings = localSettings.copy(useUdp = false)
-                                }
-                            }
-                        )
-                        Text("UDP (Lower latency)")
-                    }
-                }
-                
-                // Protocol validation warning
-                if (!localSettings.useTcp && !localSettings.useUdp) {
-                    Text(
-                        text = "⚠️ At least one protocol must be selected",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+                // Protocol selection removed; rely on LibVLC defaults
                 
                 // Buffer Settings
                 OutlinedTextField(

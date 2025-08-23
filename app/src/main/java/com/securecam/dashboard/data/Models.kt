@@ -54,8 +54,7 @@ data class StreamingSettings(
     fun validate(): StreamingSettings {
         return copy(
             networkCachingMs = networkCachingMs.coerceIn(50, 15000),
-            useTcp = if (!useTcp && !useUdp) true else useTcp, // Ensure at least one protocol is selected
-            useUdp = if (!useTcp && !useUdp) false else useUdp,
+            // No forced protocol selection; rely on VLC defaults,
             bufferSize = bufferSize.coerceIn(128, 16384),
             maxLatency = maxLatency.coerceIn(0, 10000),
             clockJitter = clockJitter.coerceIn(0, 2000),
@@ -81,8 +80,7 @@ data class StreamingSettings(
      * Checks if the streaming settings are valid
      */
     fun isValid(): Boolean {
-        return (useTcp || useUdp) && // At least one protocol must be selected
-               networkCachingMs in 50..15000 &&
+        return networkCachingMs in 50..15000 &&
                bufferSize in 128..16384 &&
                maxLatency in 0..10000 &&
                clockJitter in 0..2000 &&

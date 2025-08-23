@@ -267,11 +267,6 @@ private fun StreamingSettingsSummary(settings: StreamingSettings) {
         )
         Text(
             "Cache: ${settings.networkCachingMs}ms, " +
-                    "Protocol: ${when {
-                        settings.useTcp -> "TCP"
-                        settings.useUdp -> "UDP"
-                        else -> "Auto"
-                    }}, " +
                     "Buffer: ${settings.bufferSize}KB",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
