@@ -136,7 +136,8 @@ fun AdminScreen(
                     camera = camera,
                     onEdit = { editing = camera },
                     onDelete = { onDelete(camera.id) },
-                    onSettings = { showStreamingSettings = camera }
+                    onSettings = { showStreamingSettings = camera },
+                    onResetAllStreamingSettings = onResetAllStreamingSettings
                 )
             }
         }
@@ -194,7 +195,8 @@ private fun CameraRow(
     camera: Camera,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    onResetAllStreamingSettings: () -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
