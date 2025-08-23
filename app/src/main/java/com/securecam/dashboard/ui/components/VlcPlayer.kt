@@ -45,18 +45,8 @@ fun VlcPlayer(
             options.add("--avcodec-threads=${streamingSettings.avcodecThreads}") // Thread count
         }
         
-        // Protocol selection - CRITICAL FIX: Only one protocol at a time
-        when {
-            streamingSettings.useUdp -> {
-                options.add("--rtsp-udp")
-                options.add("--rtsp-tcp=0") // Explicitly disable TCP
-            }
-            else -> {
-                options.add("--rtsp-tcp")
-                options.add("--rtsp-udp=0") // Explicitly disable UDP
-            }
-        }
-        
+        // Transport protocol: rely on LibVLC defaults (no forced TCP/UDP flags)
+
         // Advanced network optimizations
         options.add("--adaptive-maxbuffer=${streamingSettings.adaptiveMaxBuffer}")
         options.add("--adaptive-minbuffer=${streamingSettings.adaptiveMinBuffer}")
@@ -95,17 +85,7 @@ fun VlcPlayer(
         }
         
         // RTSP specific optimizations
-        if (streamingSettings.useUdp) {
-            // UDP specific optimizations
-            options.add("--network-caching=${(streamingSettings.networkCachingMs * 0.5).toInt().coerceAtLeast(50)}")
-            options.add("--live-caching=${(streamingSettings.networkCachingMs * 0.5).toInt().coerceAtLeast(50)}")
-            options.add("--multicast-ttl=${streamingSettings.multicastTtl}")
-            options.add("--jitter-buffer-size=${streamingSettings.jitterBufferSize}")
-        } else {
-            // TCP specific optimizations
-            options.add("--network-caching=${streamingSettings.networkCachingMs}")
-            options.add("--live-caching=${streamingSettings.networkCachingMs}")
-        }
+        // No explicit RTSP protocol options as transport is handled by LibVLC
         
         // Adaptive buffering
         if (streamingSettings.enableAdaptiveBuffering) {
@@ -115,13 +95,7 @@ fun VlcPlayer(
         }
         
         // Jitter buffer for UDP streams
-        if (streamingSettings.useUdp) {
-            options.add("--clock-jitter=${streamingSettings.clockJitter}")
-            options.add("--clock-synchro=0") // Disable clock sync for UDP
-        } else {
-            options.add("--clock-jitter=${streamingSettings.clockJitter}")
-            options.add("--clock-synchro=${streamingSettings.clockSynchro}")
-        }
+        // No explicit Jitter buffer options as transport is handled by LibVLC
         
         // Low latency mode optimizations
         if (streamingSettings.lowLatencyMode) {
