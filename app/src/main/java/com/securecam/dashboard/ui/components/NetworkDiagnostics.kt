@@ -1,6 +1,7 @@
 package com.securecam.dashboard.ui.components
 
 import androidx.compose.foundation.layout.*
+import com.securecam.dashboard.data.StreamingSettings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +18,7 @@ fun NetworkDiagnostics(
     var isRunning by remember { mutableStateOf(false) }
     var results by remember { mutableStateOf<NetworkTestResults?>(null) }
     val scope = rememberCoroutineScope()
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Network Diagnostics") },
@@ -50,7 +51,7 @@ fun NetworkDiagnostics(
                         Text("Start Network Test")
                     }
                 }
-                
+
                 if (isRunning) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -60,10 +61,10 @@ fun NetworkDiagnostics(
                         Text("Testing network conditions...")
                     }
                 }
-                
+
                 results?.let { testResults ->
                     Text("Network Test Results", style = MaterialTheme.typography.titleSmall)
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -92,18 +93,18 @@ fun NetworkDiagnostics(
                         Text("Jitter:")
                         Text("${testResults.jitter}ms")
                     }
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     val recommendation = when {
                         testResults.latency < 50 && testResults.bandwidth > 20 -> "Low Latency"
                         testResults.packetLoss > 1.0 -> "High Stability"
                         testResults.jitter > 20 -> "High Stability"
                         else -> "Balanced"
                     }
-                    
+
                     Text("Recommended: $recommendation", style = MaterialTheme.typography.titleSmall)
-                    
+
                     Button(
                         onClick = {
                             val recommendedSettings = when (recommendation) {
