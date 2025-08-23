@@ -6,6 +6,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.securecam.dashboard.data.Camera
@@ -29,7 +33,7 @@ fun AdminScreen(
             onDismissRequest = { editing = null },
             title = { Text("Edit Camera") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = editName,
                         onValueChange = { editName = it },
@@ -47,7 +51,7 @@ fun AdminScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
+                FilledTonalButton(onClick = {
                     editing?.let { onUpdate(it.id, editName, editUrl) }
                     editing = null
                 }) { Text("Save") }
@@ -58,47 +62,77 @@ fun AdminScreen(
         )
     }
 
-    Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Add Camera", style = MaterialTheme.typography.titleLarge)
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Camera Name") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = url,
-            onValueChange = { url = it },
-            label = { Text("RTSP URL") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Button(
-            onClick = {
-                if (name.isNotBlank() && url.isNotBlank()) {
-                    onAdd(name.trim(), url.trim())
-                    name = ""
-                    url = ""
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            ElevatedCard(shape = MaterialTheme.shapes.large) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Add Camera", style = MaterialTheme.typography.titleLarge)
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Camera Name") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = url,
+                        onValueChange = { url = it },
+                        label = { Text("RTSP URL") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilledTonalButton(
+                            onClick = {
+                                if (name.isNotBlank() && url.isNotBlank()) {
+                                    onAdd(name.trim(), url.trim())
+                                    name = ""
+                                    url = ""
+                                }
+                            },
+                            enabled = name.isNotBlank() && url.isNotBlank()
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Spacer(Modifier.width(6.dp))
+                            Text("Add Camera")
+                        }
+                    }
                 }
-            },
-            enabled = name.isNotBlank() && url.isNotBlank()
-        ) { Text("Add Camera") }
+            }
+        }
 
-        Divider(Modifier.padding(vertical = 8.dp))
-        Text("Saved Cameras", style = MaterialTheme.typography.titleLarge)
+        item { Divider() }
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
-            items(cameras, key = { it.id }) { cam ->
-                CameraRow(
-                    cam = cam,
-                    onEdit = {
-                        editing = cam
-                        editName = cam.name
-                        editUrl = cam.rtspUrl
-                    },
-                    onDelete = { onDelete(cam.id) }
-                )
+        item {
+            Text("Saved Cameras", style = MaterialTheme.typography.titleLarge)
+        }
+
+        items(cameras, key = { it.id }) { cam ->
+            ElevatedCard(shape = MaterialTheme.shapes.medium) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(cam.name, style = MaterialTheme.typography.titleMedium)
+                    Text(cam.rtspUrl, style = MaterialTheme.typography.bodySmall)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilledTonalButton(onClick = {
+                            editing = cam
+                            editName = cam.name
+                            editUrl = cam.rtspUrl
+                        }) {
+                            Icon(Icons.Default.Edit, contentDescription = null)
+                            Spacer(Modifier.width(6.dp))
+                            Text("Edit")
+                        }
+                        OutlinedButton(onClick = { onDelete(cam.id) }) {
+                            Icon(Icons.Default.Delete, contentDescription = null)
+                            Spacer(Modifier.width(6.dp))
+                            Text("Delete")
+                        }
+                    }
+                }
             }
         }
     }
