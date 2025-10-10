@@ -96,7 +96,7 @@ private fun App(vm: CamerasViewModel = viewModel()) {
             startDestination = Dest.Home.route,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)   // ✅ works now
+                .padding(padding)  
         ) {
             composable(Dest.Home.route) {
                 val state by vm.state.collectAsStateWithLifecycle()
@@ -123,4 +123,5 @@ private fun App(vm: CamerasViewModel = viewModel()) {
         }
     }
 }
+
 
